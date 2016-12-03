@@ -125,3 +125,6 @@ const plusOrMinusButton = new CalculatorButton("&plusmn;", calculator, (calc) =>
             + " " + calc.currentOpText + calc.otherVal;
     }
 }, document.getElementById("plus-or-minus-button"));
+document.addEventListener("keypress", (e) => {
+    console.log(e.keyCode);
+});

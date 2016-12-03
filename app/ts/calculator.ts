@@ -217,3 +217,7 @@ const plusOrMinusButton : CalculatorButton = new CalculatorButton(
     },
     document.getElementById("plus-or-minus-button")
 )
+
+document.addEventListener("keypress", (e) => {
+    console.log(e.keyCode)
+})
