@@ -4,13 +4,19 @@ class Calculator {
     outputElement : HTMLElement
     currentOp : (a : number, b : number) => number
     currentOpText : string
+    buttons : CalculatorButton[]
+    evaluated : boolean
+    decimalMode : boolean
 
     constructor(outputElement : HTMLElement) {
         this.currentVal = 0
-        this.otherVal = 0
+        this.otherVal = null
         this.outputElement = outputElement
         this.currentOp = id
         this.currentOpText = ""
+        this.buttons = []
+        this.evaluated = true
+        this.decimalMode = false
     }
 
     setCurrentOp(f : (a : number) => number) : void {
@@ -23,14 +29,40 @@ class Calculator {
         this.otherVal = 0
         this.outputElement.innerHTML = this.currentVal.toString()
         this.currentOp = id
+        this.evaluated = true
+        this.decimalMode = false
     }
 
     clear() : void {
         this.currentVal = 0
-        this.otherVal = 0
+        this.otherVal = null
         this.currentOp = id
         this.currentOpText = ""
         this.outputElement.innerHTML = ""
+    }
+
+    addButton(button : CalculatorButton) {
+        this.buttons.push(button)
+    }
+
+    addButtons(...buttons : CalculatorButton[]) {
+        this.buttons = this.buttons.concat(buttons)
+    }
+
+    addButtonArray(buttons : CalculatorButton[]) {
+        this.buttons = this.buttons.concat(buttons)
+    }
+
+    getButton(text : string) {
+        return this.buttons.filter(x => x.text === text)[0]
+    }
+
+    getNumberButtons() : NumberButton[] {
+        return this.buttons.filter(x => x instanceof NumberButton).map(x => <NumberButton>x)
+    }
+
+    getOperatorButtons() : OperatorButton[] {
+        return this.buttons.filter(x => x instanceof OperatorButton).map(x => <OperatorButton>x)
     }
 }
 
@@ -69,12 +101,30 @@ class NumberButton extends CalculatorButton {
             text,
             calc,
             (calc : Calculator) => {
-                if (calc.currentOp === id) {
-                    calc.currentVal = appendDigit(calc.currentVal, this.val)
-                    calc.outputElement.innerHTML += this.val
+                if (calc.evaluated) {
+                    if (calc.decimalMode)
+                        calc.currentVal = this.val / 10
+                    else
+                        calc.currentVal = this.val
+
+                    calc.outputElement.innerHTML = calc.currentVal.toString()
+                    calc.evaluated = false
                 } else {
-                    calc.otherVal = appendDigit(calc.otherVal, this.val)
-                    calc.outputElement.innerHTML += this.val
+                    if (calc.currentOp === id) {
+                        if (calc.decimalMode)
+                            calc.currentVal = appendDecimal(calc.currentVal, this.val)
+                        else
+                            calc.currentVal = appendDigit(calc.currentVal, this.val)
+
+                        calc.outputElement.innerHTML = calc.currentVal.toString()
+                    } else {
+                        if (calc.decimalMode)
+                            calc.otherVal = appendDecimal(calc.otherVal, this.val)
+                        else
+                            calc.otherVal = appendDigit(calc.otherVal, this.val)
+
+                        calc.outputElement.innerHTML = calc.currentVal + " " + calc.currentOpText + " " + calc.otherVal
+                    }
                 }
 
                 console.log(calc.currentVal)
@@ -104,13 +154,21 @@ class OperatorButton extends CalculatorButton {
                 if (calc.currentOp === id) {
                     calc.currentOp = operation
                     calc.outputElement.innerHTML += " " + this.text + " "
+                    calc.evaluated = false
                 } else {
-                    calc.evaluate()
-                    calc.currentOp = operation
-                    calc.outputElement.innerHTML += " " + this.text + " "
+                    if (!calc.otherVal) {
+                        calc.currentOp = operation
+                        calc.outputElement.innerHTML = calc.currentVal + " " + this.text + " "
+                    } else {
+                        calc.evaluate()
+                        calc.currentOp = operation
+                        calc.outputElement.innerHTML += " " + this.text + " "
+                        calc.evaluated = false
+                    }
                 }
 
                 calc.currentOpText = this.text
+                calc.decimalMode = false
 
                 console.log(calc.currentOp)
             },
@@ -122,6 +180,11 @@ class OperatorButton extends CalculatorButton {
 
 function appendDigit (val : number, digit : number) : number {
     return (val * 10) + digit
+}
+
+function appendDecimal (val : number, digit : number) : number {
+    const numDigits = val == 0 ? 1 : Math.floor(Math.log10(val)) + 1
+    return val + (digit / (Math.pow(10, numDigits)))
 }
 
 function removeDigit(val : number) {
@@ -181,21 +244,35 @@ const equalsButton : CalculatorButton = new CalculatorButton(
 const clearButton : CalculatorButton = new CalculatorButton(
     "C",
     calculator,
-    (calc) => calc.clear(),
+    (calc) => {
+        if (calc.currentOp === id) {
+            calc.clear()
+        } else {
+            calc.otherVal = 0
+            calc.outputElement.innerHTML = calc.currentVal + " " + calc.currentOpText + " " + calc.otherVal
+        }
+    },
     document.getElementById("clear-button")
+)
+
+const clearAllButton : CalculatorButton = new CalculatorButton(
+    "CE",
+    calculator,
+    (calc) => calc.clear(),
+    document.getElementById("clear-all-button")
 )
 
 const backspaceButton : CalculatorButton = new CalculatorButton(
     "<",
     calculator,
     (calc) => {
-        if (calc.currentOp === id)
+        if (calc.currentOp === id) {
             calc.currentVal = removeDigit(calc.currentVal)
-        else
+            calc.outputElement.innerHTML = calc.currentVal.toString()
+        } else {
             calc.otherVal = removeDigit(calc.otherVal)
-
-        var text = calc.outputElement.innerHTML
-        calc.outputElement.innerHTML = text.substring(0, text.length - 1)
+            calc.outputElement.innerHTML = calc.currentVal + " " + calc.currentOpText + " " + calc.otherVal
+        }
     },
     document.getElementById("backspace-button")
 )
@@ -218,6 +295,60 @@ const plusOrMinusButton : CalculatorButton = new CalculatorButton(
     document.getElementById("plus-or-minus-button")
 )
 
+const decimalButton : CalculatorButton = new CalculatorButton(
+    ".",
+    calculator,
+    (calc) => {
+        if (!calc.decimalMode) {
+            if (calc.evaluated) {
+                calc.currentVal = 0
+                calc.outputElement.innerHTML = 0 + "."
+            } else
+                calc.outputElement.innerHTML += "."
+
+            calc.decimalMode = true
+        }
+    },
+    document.getElementById("decimal-button")
+)
+
+calculator.addButtons(equalsButton, clearButton, backspaceButton, plusOrMinusButton)
+calculator.addButtonArray(numberButtons)
+calculator.addButtonArray(operatorButtons)
+
+document.addEventListener("keydown", (e) => {
+    const keyCode = e.keyCode
+    if (keyCode === 8) {
+        calculator.getButton("<").behavior(calculator)
+    }
+})
+
 document.addEventListener("keypress", (e) => {
-    console.log(e.keyCode)
+    const keyCode = e.keyCode
+    console.log(keyCode)
+    if (keyCode >= 48 && keyCode <= 57) {
+        const num = e.keyCode - 48
+        calculator.getButton(num.toString()).behavior(calculator)
+    } else {
+        switch (keyCode) {
+            case 42:
+                calculator.getButton("*").behavior(calculator)
+                break
+            case 43:
+                calculator.getButton("+").behavior(calculator)
+                break
+            case 45:
+                calculator.getButton("-").behavior(calculator)
+                break
+            case 47:
+                calculator.getButton("/").behavior(calculator)
+                break
+            case 13:
+                calculator.getButton("=").behavior(calculator)
+                break
+            case 61:
+                calculator.getButton("=").behavior(calculator)
+                break
+        }
+    }
 })
