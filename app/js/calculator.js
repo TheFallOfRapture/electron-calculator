@@ -121,7 +121,7 @@ function appendDigit(val, digit) {
     return (val * 10) + digit;
 }
 function appendDecimal(val, digit) {
-    const numDigits = val == 0 ? 1 : Math.floor(Math.log10(val)) + 1;
+    const numDigits = Math.floor(Math.log10(val || 1)) + 1;
     return val + (digit / (Math.pow(10, numDigits)));
 }
 function removeDigit(val) {

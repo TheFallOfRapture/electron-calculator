@@ -3,6 +3,30 @@
   "version": "0.0.1",
   "main": "main.js",
   "devDependencies": {
-    "electron": "^1.4.10"
+    "electron": "^1.4.10",
+    "electron-builder": "^10.5.0"
+  },
+  "description": "A calculator built in Electron.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "pack": "build --dir",
+    "dist": "build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/TheFallOfRapture/electron-calculator.git"
+  },
+  "keywords": [
+    "electron",
+    "calculator"
+  ],
+  "author": "Fernando Gonzalez",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/TheFallOfRapture/electron-calculator/issues"
+  },
+  "homepage": "https://github.com/TheFallOfRapture/electron-calculator#readme",
+  "build": {
+    "appId": "TFOR.ElectronCalculator"
   }
 }

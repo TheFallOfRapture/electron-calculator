@@ -183,7 +183,7 @@ function appendDigit (val : number, digit : number) : number {
 }
 
 function appendDecimal (val : number, digit : number) : number {
-    const numDigits = val == 0 ? 1 : Math.floor(Math.log10(val)) + 1
+    const numDigits = Math.floor(Math.log10(val || 1)) + 1
     return val + (digit / (Math.pow(10, numDigits)))
 }
 
