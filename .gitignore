@@ -2,3 +2,5 @@ node_modules
 .jshintrc
 .tern-project
 tsconfig.json
+build/
+dist/
