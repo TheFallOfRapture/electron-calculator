@@ -7,6 +7,7 @@ class Calculator {
     buttons : CalculatorButton[]
     evaluated : boolean
     decimalMode : boolean
+    positiveMode : boolean
 
     constructor(outputElement : HTMLElement) {
         this.currentVal = 0
@@ -17,6 +18,7 @@ class Calculator {
         this.buttons = []
         this.evaluated = true
         this.decimalMode = false
+        this.positiveMode = true
     }
 
     setCurrentOp(f : (a : number) => number) : void {
@@ -31,6 +33,7 @@ class Calculator {
         this.currentOp = id
         this.evaluated = true
         this.decimalMode = false
+        this.positiveMode = true
     }
 
     clear() : void {
@@ -39,7 +42,9 @@ class Calculator {
         this.currentOp = id
         this.currentOpText = ""
         this.outputElement.innerHTML = ""
+        this.evaluated = true
         this.decimalMode = false
+        this.positiveMode = true
     }
 
     addButton(button : CalculatorButton) {
@@ -111,22 +116,20 @@ class NumberButton extends CalculatorButton {
                 } else {
                     if (calc.currentOp === id) {
                         if (calc.decimalMode)
-                            calc.currentVal = appendDecimal(calc.currentVal, this.val)
+                            calc.currentVal = appendDecimal(calc.currentVal, this.val, calc.positiveMode)
                         else
-                            calc.currentVal = appendDigit(calc.currentVal, this.val)
+                            calc.currentVal = appendDigit(calc.currentVal, this.val, calc.positiveMode)
 
                         calc.outputElement.innerHTML = calc.currentVal.toString()
                     } else {
                         if (calc.decimalMode)
-                            calc.otherVal = appendDecimal(calc.otherVal, this.val)
+                            calc.otherVal = appendDecimal(calc.otherVal, this.val, calc.positiveMode)
                         else
-                            calc.otherVal = appendDigit(calc.otherVal, this.val)
+                            calc.otherVal = appendDigit(calc.otherVal, this.val, calc.positiveMode)
 
                         calc.outputElement.innerHTML = calc.currentVal + " " + calc.currentOpText + " " + calc.otherVal
                     }
                 }
-
-                console.log(calc.currentVal)
             },
             element
         )
@@ -168,8 +171,7 @@ class OperatorButton extends CalculatorButton {
 
                 calc.currentOpText = this.text
                 calc.decimalMode = false
-
-                console.log(calc.currentOp)
+                calc.positiveMode = true
             },
             element
         )
@@ -177,13 +179,31 @@ class OperatorButton extends CalculatorButton {
     }
 }
 
-function appendDigit (val : number, digit : number) : number {
-    return (val * 10) + digit
+function appendDigit (val : number, digit : number, positive : boolean) : number {
+    const sign = positive ? 1 : -1
+    return (val * 10) + (digit * sign)
 }
 
-function appendDecimal (val : number, digit : number) : number {
-    const numDigits = Math.floor(Math.log10(val || 1)) + 1
-    return val + (digit / (Math.pow(10, numDigits)))
+function numDecimals(x : number) {
+    const decimalPart = x - Math.floor(x)
+    console.log(decimalPart)
+    if (decimalPart == 0)
+        return 0
+
+    console.log(x)
+    return 1 + numDecimals(x * 10)
+}
+
+function numDigits(x : number) {
+    if (x == 0)
+        return 0
+
+    return 1 + numDigits((x - x % 10) / 10)
+}
+
+function appendDecimal (val : number, digit : number, positive : boolean) : number {
+    const sign = positive ? 1 : -1
+    return val + (digit / (Math.pow(10, numDecimals(val) + 1))) * sign
 }
 
 function removeDigit(val : number) {
@@ -289,6 +309,8 @@ const plusOrMinusButton : CalculatorButton = new CalculatorButton(
             calc.otherVal = -calc.otherVal
             calc.outputElement.innerHTML = calc.currentVal + " " + calc.currentOpText + calc.otherVal
         }
+
+        calc.positiveMode = !calc.positiveMode
     },
     document.getElementById("plus-or-minus-button")
 )
