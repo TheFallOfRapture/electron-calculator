@@ -1,6 +1,6 @@
 {
   "name": "electron-calculator",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "main": "main.js",
   "devDependencies": {
     "electron": "^1.4.10",
@@ -10,7 +10,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "pack": "build --dir",
-    "dist": "build"
+    "dist": "build",
+    "start": "electron ."
   },
   "repository": {
     "type": "git",

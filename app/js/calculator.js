@@ -27,6 +27,7 @@ class Calculator {
         this.currentOp = id;
         this.currentOpText = "";
         this.outputElement.innerHTML = "";
+        this.decimalMode = false;
     }
     addButton(button) {
         this.buttons.push(button);
@@ -47,9 +48,7 @@ class Calculator {
         return this.buttons.filter(x => x instanceof OperatorButton).map(x => x);
     }
 }
-function id(a, b) {
-    return a;
-}
+var id = (a, b) => a;
 class CalculatorButton {
     constructor(text, calc, behavior, element) {
         this.text = text;
@@ -147,7 +146,7 @@ function getOperator(text) {
         case "/":
             return (a, b) => a / b;
         default:
-            return (a, b) => a;
+            return id;
     }
 }
 const operatorButtons = toArray(document.getElementsByClassName("operator-button"))
@@ -184,8 +183,7 @@ const plusOrMinusButton = new CalculatorButton("&plusmn;", calculator, (calc) =>
     }
     else {
         calc.otherVal = -calc.otherVal;
-        calc.outputElement.innerHTML = calc.currentVal
-            + " " + calc.currentOpText + calc.otherVal;
+        calc.outputElement.innerHTML = calc.currentVal + " " + calc.currentOpText + calc.otherVal;
     }
 }, document.getElementById("plus-or-minus-button"));
 const decimalButton = new CalculatorButton(".", calculator, (calc) => {

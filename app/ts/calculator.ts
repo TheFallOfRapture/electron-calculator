@@ -39,6 +39,7 @@ class Calculator {
         this.currentOp = id
         this.currentOpText = ""
         this.outputElement.innerHTML = ""
+        this.decimalMode = false
     }
 
     addButton(button : CalculatorButton) {
@@ -66,9 +67,7 @@ class Calculator {
     }
 }
 
-function id(a : number, b : number) : number {
-    return a
-}
+var id = (a : number, b : number) => a
 
 interface ICalculatorButton {
     text : string,
@@ -218,7 +217,7 @@ function getOperator(text : string) : (a : number, b : number) => number {
         case "/":
             return (a, b) => a / b
         default:
-            return (a, b) => a
+            return id
     }
 }
 
@@ -283,13 +282,12 @@ const plusOrMinusButton : CalculatorButton = new CalculatorButton(
     (calc) => {
         var text = calculator.outputElement.innerHTML
 
-        if (calc.currentOp === id){
+        if (calc.currentOp === id) {
             calc.currentVal = -calc.currentVal
             calc.outputElement.innerHTML = calc.currentVal.toString()
         } else {
             calc.otherVal = -calc.otherVal
-            calc.outputElement.innerHTML = calc.currentVal
-                + " " + calc.currentOpText + calc.otherVal
+            calc.outputElement.innerHTML = calc.currentVal + " " + calc.currentOpText + calc.otherVal
         }
     },
     document.getElementById("plus-or-minus-button")
