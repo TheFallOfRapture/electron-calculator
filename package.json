@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "main": "main.js",
   "devDependencies": {
-    "electron": "^1.4.10",
+    "electron": "^9.1.0",
     "electron-builder": "^10.5.0"
   },
   "description": "A calculator built in Electron.",
